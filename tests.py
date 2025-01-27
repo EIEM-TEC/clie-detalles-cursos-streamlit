@@ -10,8 +10,6 @@ nomArea = areas[areas["nombre"] != "Total"]["nombre"].head(1).item()
 
 print(nomArea)
 
-
-
 codArea = areas[areas["nombre"]==nomArea]["codArea"].item()
 saberes = saberes[saberes["codArea"]==codArea]
 

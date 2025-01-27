@@ -1,18 +1,18 @@
-# 🎈 Blank app template
+# Aplicación web para consulta de detalles de los cursos de Ing. Electromecánica
+### Comisión para la creación de la Licenciatura en Ingeniería Electromecánica
+#### Escuela de Ingeniería Electromecánica - TEC
 
-A simple Streamlit app template for you to modify!
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://clie-detalles-cursos.streamlit.app/)
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://blank-app-template.streamlit.app/)
+### Como correr la app a nivel local
 
-### How to run it on your own machine
-
-1. Install the requirements
+1. Instalar los requerimientos
 
    ```
    $ pip install -r requirements.txt
    ```
 
-2. Run the app
+2. Correr la aplicación
 
    ```
    $ streamlit run streamlit_app.py
