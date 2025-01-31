@@ -1,18 +1,22 @@
 import pandas as pd
 
-areas = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/areas.csv")
-cursos = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/cursos/cursos_malla.csv")
-rasgos = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/rasgos.csv")
-saberes = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/saberes.csv")
-cursos_rasgos = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/cursos/cursos_rasgos.csv")
+areas = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/areas.csv").fillna("")
+cursosraw = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/cursos/cursos_malla.csv").fillna("")
+rasgos = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/rasgos.csv").fillna("")
+saberes = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/saberes.csv").fillna("")
+cursos_rasgos = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/cursos/cursos_rasgos.csv").fillna("")
+
 
 # nomArea = areas[areas["nombre"] != "Total"]["nombre"].head(1).item()
 nomArea = "Sistemas ciberfísicos"
 
-print(nomArea)
-
 codArea = areas[areas["nombre"]==nomArea]["codArea"].item()
 saberes = saberes[saberes["codArea"]==codArea]
+
+cursos = cursosraw[(cursosraw["area"]==codArea)\
+                   & (cursosraw["semestre"]<=10)\
+                   & (cursosraw["nombre"]!="Electiva I")\
+                   & (cursosraw["nombre"]!="Electiva II") ].copy()
 
 #"Codigo de area:", codArea
 
@@ -24,8 +28,6 @@ idCurso = cursos[cursos["nombre"]==nomCurso]["id"].item()
 
 cursos_rasgos["codSaber"] = cursos_rasgos["codSaber"].str.split(';', expand=False)
 
-print(cursos_rasgos)
-
 codSaber = cursos_rasgos[cursos_rasgos["id"]==idCurso]["codSaber"].item()
 
 rasgos["codSaber"] = rasgos["codSaber"].str.split(';', expand=False)
@@ -34,12 +36,31 @@ rasgos = rasgos.explode("codSaber")
 
 codRasgos = rasgos[rasgos["codSaber"].isin(codSaber)]["rasgo"].unique()
 
+print("Requisitos:\n")
 
-for index in range(len(codSaber)):
-    print(codSaber[index])
+cursos["requisitos"] = cursos["requisitos"].str.split(';', expand=False) #convertir los valores separados por ; en una lista por fila
 
-# codRasgos = rasgos["codSaber"].str.split(';', expand=False).item()
+req = cursos[cursos["nombre"]==nomCurso]["requisitos"].item()
 
-print("Cod")
-print(codRasgos)
+if req != [""]:
+    for reqi in req:
+        codReq = cursosraw[cursosraw["id"]==reqi]["codigo"].item()
+        curReq = cursosraw[cursosraw["id"]==reqi]["nombre"].item()
+        print(f"* {codReq} - {curReq}") 
+else:
+    print("* No")
 
+print("Ruta de requisitos:\n")
+
+cursosraw["requisitos"] = cursosraw["requisitos"].str.split(';', expand=False) #convertir los valores separados por ; en una lista por fila
+
+def recurReq(req):
+    if req != [""]:
+        for reqi in req:
+            codReq = cursosraw[cursosraw["id"]==reqi]["codigo"].item()
+            curReq = cursosraw[cursosraw["id"]==reqi]["nombre"].item()
+            print(f"* {codReq} - {curReq}")
+            reqreq = cursosraw[cursosraw["id"]==reqi]["requisitos"].item()
+            recurReq(reqreq)
+
+recurReq(req)

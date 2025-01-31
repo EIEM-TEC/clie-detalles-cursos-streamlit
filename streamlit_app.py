@@ -13,11 +13,11 @@ st.set_page_config(
 Escuela de Ingeniería Electromecánica - Tecnológico de Costa Rica
 '''
 
-areas = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/areas.csv")
-cursosraw = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/cursos/cursos_malla.csv")
-rasgos = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/rasgos.csv")
-saberes = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/saberes.csv")
-cursos_rasgos = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/cursos/cursos_rasgos.csv")
+areas = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/areas.csv").fillna("")
+cursosraw = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/cursos/cursos_malla.csv").fillna("")
+rasgos = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/rasgos.csv").fillna("")
+saberes = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/saberes.csv").fillna("")
+cursos_rasgos = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/cursos/cursos_rasgos.csv").fillna("")
 
 nomArea = st.selectbox(
     'Area',
@@ -27,7 +27,7 @@ codArea = areas[areas["nombre"]==nomArea]["codArea"].item()
 cursos = cursosraw[(cursosraw["area"]==codArea)\
                    & (cursosraw["semestre"]<=10)\
                    & (cursosraw["nombre"]!="Electiva I")\
-                   & (cursosraw["nombre"]!="Electiva II") ]
+                   & (cursosraw["nombre"]!="Electiva II") ].copy()
 saberes = saberes[saberes["codArea"]==codArea].copy()
 
 nomCurso = st.selectbox(
@@ -62,23 +62,46 @@ f'''
 
 st.markdown("*Requisitos:*")
 
-req = cursos[cursos["nombre"]==nomCurso]["requisitos"].str.split(';', expand=False).item()
-if str(req) != "nan":
-    for index in range(len(req)):
-        curReq = cursosraw[cursosraw["id"]==req[index]]["nombre"].item()
-        st.markdown(f"* {curReq}") 
+cursos["requisitos"] = cursos["requisitos"].str.split(';', expand=False) #convertir los valores separados por ; en una lista por fila
+
+req = cursos[cursos["nombre"]==nomCurso]["requisitos"].item()
+
+if req != [""]:
+    for reqi in req:
+        codReq = cursosraw[cursosraw["id"]==reqi]["codigo"].item()
+        curReq = cursosraw[cursosraw["id"]==reqi]["nombre"].item()
+        st.markdown(f"* {codReq} - {curReq}") 
 else:
     st.markdown("* No")
 
 st.markdown("*Correquisitos:*")
 
-cor = cursos[cursos["nombre"]==nomCurso]["correquisitos"].str.split(';', expand=False).item()
-if str(cor) != "nan":
-    for index in range(len(cor)):
-        curCor = cursosraw[cursosraw["id"]==cor[index]]["nombre"].item()
-        st.markdown(f"* {curCor}") 
+cursos["correquisitos"] = cursos["correquisitos"].str.split(';', expand=False) #convertir los valores separados por ; en una lista por fila
+
+cor = cursos[cursos["nombre"]==nomCurso]["correquisitos"].item()
+
+if cor != [""]:
+    for cori in cor:
+        codCor = cursosraw[cursosraw["id"]==cori]["codigo"].item()
+        curCor = cursosraw[cursosraw["id"]==cori]["nombre"].item()
+        st.markdown(f"* {codCor} - {curCor}") 
 else:
     st.markdown("* No")
+
+st.markdown("*Es requisito:*")
+
+cursos["esrequisito"] = cursos["esrequisito"].str.split(';', expand=False) #convertir los valores separados por ; en una lista por fila
+
+esreq = cursos[cursos["nombre"]==nomCurso]["esrequisito"].item()
+
+if esreq != [""]:
+    for esreqi in esreq:
+        codesReq = cursosraw[cursosraw["id"]==esreqi]["codigo"].item()
+        curesReq = cursosraw[cursosraw["id"]==esreqi]["nombre"].item()
+        st.markdown(f"* {codesReq} - {curesReq}") 
+else:
+    st.markdown("* No")
+
 
 cursos_rasgos["codSaber"] = cursos_rasgos["codSaber"].str.split(';', expand=False) #convertir los valores separados por ; en una lista por fila
 
@@ -92,25 +115,54 @@ codRasgos = rasgos[rasgos["codSaber"].isin(codSaber)]["rasgo"].unique()
 
 cursos_rasgos = cursos_rasgos.explode("codSaber") #expadir la lista despues de tener codSaber
 
-print(cursos_rasgos)
-
 st.markdown("### Saberes:")
 
-for index in range(len(codSaber)):
-    saber = saberes[saberes["codSaber"]==codSaber[index]]["nombre"].item()
-    st.markdown(f"* {saber}")
-    compar = cursos_rasgos[(cursos_rasgos["codSaber"]==codSaber[index])\
+for codSaberi in codSaber:
+    saber = saberes[saberes["codSaber"]==codSaberi]["nombre"].item()
+    st.markdown(f"* **{saber}**")
+    compar = cursos_rasgos[(cursos_rasgos["codSaber"]==codSaberi)\
                         & (cursos_rasgos["id"]!=idCurso)\
                         ]['id'].tolist()
-    for index in range(len(compar)):
-        if index == 0:
+    if compar != []:
             st.markdown("*Compartido con:*")
-        if compar[index] in cursos["id"].tolist():
-            nomCompar = cursos[cursos["id"]==compar[index]]["nombre"].item()
-            st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{nomCompar}")
+    for compari in compar:        
+        if compari in cursos["id"].tolist():
+            codCompar = cursos[cursos["id"]==compari]["codigo"].item()
+            nomCompar = cursos[cursos["id"]==compari]["nombre"].item()
+            st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{codCompar} - {nomCompar}")
     
 st.markdown("### Rasgos:")
 
-for index in range(len(codRasgos)):
-    rasgo = codRasgos[index]
+for rasgo in codRasgos:
     st.markdown(f"* {rasgo}")
+
+
+st.markdown("### Ruta de requisitos:")
+
+cursosraw["requisitos"] = cursosraw["requisitos"].str.split(';', expand=False) #convertir los valores separados por ; en una lista por fila
+
+def recurReq(req):
+    if req != [""]:
+        for reqi in req:
+            codReq = cursosraw[cursosraw["id"]==reqi]["codigo"].item()
+            curReq = cursosraw[cursosraw["id"]==reqi]["nombre"].item()
+            st.markdown(f"* {codReq} - {curReq}")
+            reqreq = cursosraw[cursosraw["id"]==reqi]["requisitos"].item()
+            recurReq(reqreq)
+
+recurReq(req)
+
+st.markdown("### Ruta de cursos para los que es requisito:")
+
+cursosraw["esrequisito"] = cursosraw["esrequisito"].str.split(';', expand=False) #convertir los valores separados por ; en una lista por fila
+
+def recurEsReq(esreq):
+    if esreq != [""]:
+        for esreqi in esreq:
+            codesReq = cursosraw[cursosraw["id"]==esreqi]["codigo"].item()
+            curesReq = cursosraw[cursosraw["id"]==esreqi]["nombre"].item()
+            st.markdown(f"* {codesReq} - {curesReq}")
+            esreqesreq = cursosraw[cursosraw["id"]==esreqi]["esrequisito"].item()
+            recurEsReq(esreqesreq)
+
+recurEsReq(esreq)
