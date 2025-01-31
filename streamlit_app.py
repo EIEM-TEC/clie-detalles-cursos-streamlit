@@ -140,29 +140,57 @@ for rasgo in codRasgos:
 st.markdown("### Ruta de requisitos:")
 
 cursosraw["requisitos"] = cursosraw["requisitos"].str.split(';', expand=False) #convertir los valores separados por ; en una lista por fila
+cursosraw["correquisitos"] = cursosraw["correquisitos"].str.split(';', expand=False) #convertir los valores separados por ; en una lista por fila
 
-def recurReq(req):
+rutaReq = set()
+
+def recurReq(req,cor):
+    if (cor != [""]) & (req != [""]):
+        req.extend(cor)
+    elif req == [""]:
+        req = cor
     if req != [""]:
         for reqi in req:
+            seme = cursosraw[cursosraw["id"]==reqi]["semestre"].item()
+            fila = cursosraw[cursosraw["id"]==reqi]["fila"].item()
+            order = int(str(seme) + str(fila))
             codReq = cursosraw[cursosraw["id"]==reqi]["codigo"].item()
             curReq = cursosraw[cursosraw["id"]==reqi]["nombre"].item()
-            st.markdown(f"* {codReq} - {curReq}")
+            rutaReq.add((order, codReq, curReq))
             reqreq = cursosraw[cursosraw["id"]==reqi]["requisitos"].item()
-            recurReq(reqreq)
+            corcor = cursosraw[cursosraw["id"]==reqi]["correquisitos"].item()
+            recurReq(reqreq,corcor)
 
-recurReq(req)
+recurReq(req,cor)
+
+# Convert the set to a list and sort it by "nombre"
+rutaReq = sorted(list(rutaReq), key=lambda x: x[0])
+
+for req in rutaReq:
+    st.markdown(f"* {req[1]} - {req[2]}")
 
 st.markdown("### Ruta de cursos para los que es requisito:")
 
 cursosraw["esrequisito"] = cursosraw["esrequisito"].str.split(';', expand=False) #convertir los valores separados por ; en una lista por fila
 
+rutaEsReq = set()
+
 def recurEsReq(esreq):
     if esreq != [""]:
         for esreqi in esreq:
+            seme = cursosraw[cursosraw["id"]==esreqi]["semestre"].item()
+            fila = cursosraw[cursosraw["id"]==esreqi]["fila"].item()
+            order = int(str(seme) + str(fila))
             codesReq = cursosraw[cursosraw["id"]==esreqi]["codigo"].item()
             curesReq = cursosraw[cursosraw["id"]==esreqi]["nombre"].item()
-            st.markdown(f"* {codesReq} - {curesReq}")
+            rutaEsReq.add((order, codesReq, curesReq))
             esreqesreq = cursosraw[cursosraw["id"]==esreqi]["esrequisito"].item()
             recurEsReq(esreqesreq)
 
 recurEsReq(esreq)
+
+# Convert the set to a list and sort it by "nombre"
+rutaEsReq = sorted(list(rutaEsReq), key=lambda x: x[0])
+
+for esreq in rutaEsReq:
+    st.markdown(f"* {esreq[1]} - {esreq[2]}")

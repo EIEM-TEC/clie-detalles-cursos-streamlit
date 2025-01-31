@@ -8,7 +8,7 @@ cursos_rasgos = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/ref
 
 
 # nomArea = areas[areas["nombre"] != "Total"]["nombre"].head(1).item()
-nomArea = "Sistemas ciberfísicos"
+nomArea = "Instalaciones electromecánicas"
 
 codArea = areas[areas["nombre"]==nomArea]["codArea"].item()
 saberes = saberes[saberes["codArea"]==codArea]
@@ -21,7 +21,7 @@ cursos = cursosraw[(cursosraw["area"]==codArea)\
 #"Codigo de area:", codArea
 
 # nomCurso = cursos[cursos["area"]==codArea]["nombre"].head(1).item()
-nomCurso = "Ingeniería de sistemas"
+nomCurso = "Gestión de la energía"
 
 codCurso = cursos[cursos["nombre"]==nomCurso]["codigo"].item()
 idCurso = cursos[cursos["nombre"]==nomCurso]["id"].item()
@@ -54,13 +54,25 @@ print("Ruta de requisitos:\n")
 
 cursosraw["requisitos"] = cursosraw["requisitos"].str.split(';', expand=False) #convertir los valores separados por ; en una lista por fila
 
+rutaReq = set()
+
 def recurReq(req):
     if req != [""]:
         for reqi in req:
+            seme = cursosraw[cursosraw["id"]==reqi]["semestre"].item()
+            fila = cursosraw[cursosraw["id"]==reqi]["fila"].item()
             codReq = cursosraw[cursosraw["id"]==reqi]["codigo"].item()
             curReq = cursosraw[cursosraw["id"]==reqi]["nombre"].item()
+            order = int(str(seme) + str(fila))
+            rutaReq.add((order, codReq, curReq))
             print(f"* {codReq} - {curReq}")
             reqreq = cursosraw[cursosraw["id"]==reqi]["requisitos"].item()
             recurReq(reqreq)
 
 recurReq(req)
+
+# Convert the set to a list and sort it by "nombre"
+rutaReq = sorted(list(rutaReq), key=lambda x: x[0])
+
+for req in rutaReq:
+    print(req[2])
