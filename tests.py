@@ -6,7 +6,8 @@ rasgos = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads
 saberes = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/saberes.csv")
 cursos_rasgos = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/cursos/cursos_rasgos.csv")
 
-nomArea = areas[areas["nombre"] != "Total"]["nombre"].head(1).item()
+# nomArea = areas[areas["nombre"] != "Total"]["nombre"].head(1).item()
+nomArea = "Sistemas ciberfísicos"
 
 print(nomArea)
 
@@ -15,20 +16,24 @@ saberes = saberes[saberes["codArea"]==codArea]
 
 #"Codigo de area:", codArea
 
-nomCurso = cursos[cursos["area"]==codArea]["nombre"].head(1).item()
+# nomCurso = cursos[cursos["area"]==codArea]["nombre"].head(1).item()
+nomCurso = "Ingeniería de sistemas"
 
 codCurso = cursos[cursos["nombre"]==nomCurso]["codigo"].item()
 idCurso = cursos[cursos["nombre"]==nomCurso]["id"].item()
 
-codSaber = cursos_rasgos[cursos_rasgos["id"]==idCurso]["codSaber"].str.split(';', expand=False).item()
+cursos_rasgos["codSaber"] = cursos_rasgos["codSaber"].str.split(';', expand=False)
+
+print(cursos_rasgos)
+
+codSaber = cursos_rasgos[cursos_rasgos["id"]==idCurso]["codSaber"].item()
 
 rasgos["codSaber"] = rasgos["codSaber"].str.split(';', expand=False)
 
 rasgos = rasgos.explode("codSaber")
 
-print(rasgos)
-
 codRasgos = rasgos[rasgos["codSaber"].isin(codSaber)]["rasgo"].unique()
+
 
 for index in range(len(codSaber)):
     print(codSaber[index])

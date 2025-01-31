@@ -54,11 +54,11 @@ f'''
 * Código: {codCurso}
 * Semestre: {semes}
 * Creditos: {cred}
-* Horas: {hteor + hprac}
-* Horas teoría: {hteor}
-* Horas práctica: {hprac}
+* Horas clase: {hteor + hprac}<br>
+&nbsp;&nbsp;&nbsp;&nbsp; teoría: {hteor}<br>
+&nbsp;&nbsp;&nbsp;&nbsp; práctica: {hprac}
 * Horas extraclase: {(cred * 3)-(hteor + hprac)}
-''')
+''', unsafe_allow_html=True)
 
 st.markdown("*Requisitos:*")
 
@@ -80,7 +80,9 @@ if str(cor) != "nan":
 else:
     st.markdown("* No")
 
-codSaber = cursos_rasgos[cursos_rasgos["id"]==idCurso]["codSaber"].str.split(';', expand=False).item()
+cursos_rasgos["codSaber"] = cursos_rasgos["codSaber"].str.split(';', expand=False) #convertir los valores separados por ; en una lista por fila
+
+codSaber = cursos_rasgos[cursos_rasgos["id"]==idCurso]["codSaber"].item()
 
 rasgos["codSaber"] = rasgos["codSaber"].str.split(';', expand=False) #convertir los valores separados por ; en una lista por fila
 
@@ -88,12 +90,25 @@ rasgos = rasgos.explode("codSaber") #expadir la lista
 
 codRasgos = rasgos[rasgos["codSaber"].isin(codSaber)]["rasgo"].unique()
 
+cursos_rasgos = cursos_rasgos.explode("codSaber") #expadir la lista despues de tener codSaber
+
+print(cursos_rasgos)
+
 st.markdown("### Saberes:")
 
 for index in range(len(codSaber)):
     saber = saberes[saberes["codSaber"]==codSaber[index]]["nombre"].item()
     st.markdown(f"* {saber}")
-
+    compar = cursos_rasgos[(cursos_rasgos["codSaber"]==codSaber[index])\
+                        & (cursos_rasgos["id"]!=idCurso)\
+                        ]['id'].tolist()
+    for index in range(len(compar)):
+        if index == 0:
+            st.markdown("*Compartido con:*")
+        if compar[index] in cursos["id"].tolist():
+            nomCompar = cursos[cursos["id"]==compar[index]]["nombre"].item()
+            st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{nomCompar}")
+    
 st.markdown("### Rasgos:")
 
 for index in range(len(codRasgos)):
