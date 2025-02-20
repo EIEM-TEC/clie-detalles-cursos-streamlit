@@ -15,13 +15,13 @@ Escuela de Ingeniería Electromecánica - Tecnológico de Costa Rica
 
 areas = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/areas.csv").fillna("")
 cursosraw = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/cursos/cursos_malla.csv").fillna("")
-rasgos = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/rasgos.csv").fillna("")
-saberes = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/saberes.csv").fillna("")
+rasgos = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/rasgos_ejes/rasgos.csv").fillna("")
+saberes = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/rasgos_ejes/saberes.csv").fillna("")
 cursos_rasgos = pd.read_csv("https://raw.githubusercontent.com/EIEM-TEC/CLIE/refs/heads/main/cursos/cursos_rasgos.csv").fillna("")
 
 nomArea = st.selectbox(
     'Area',
-    areas[areas["nombre"] != "Total"]["nombre"])
+    areas[(areas["nombre"] != "Total") & (areas["nombre"] != "Énfasis")]["nombre"])
 
 codArea = areas[areas["nombre"]==nomArea]["codArea"].item()
 cursos = cursosraw[(cursosraw["area"]==codArea)\
