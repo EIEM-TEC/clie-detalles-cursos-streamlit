@@ -28,7 +28,7 @@ cursos = cursosraw[(cursosraw["area"]==codArea)\
                    & (cursosraw["semestre"]<=10)\
                    & (cursosraw["nombre"]!="Electiva I")\
                    & (cursosraw["nombre"]!="Electiva II") ].copy()
-saberes = saberes[saberes["codArea"]==codArea].copy()
+#saberes = saberes[saberes["codArea"]==codArea].copy()  esto causaba errores con metrología
 
 nomCurso = st.selectbox(
     "Curso",
@@ -117,7 +117,10 @@ cursos_rasgos = cursos_rasgos.explode("codSaber") #expadir la lista despues de t
 
 st.markdown("### Saberes:")
 
+print(saberes)
+
 for codSaberi in codSaber:
+    print(saberes[saberes["codSaber"]==codSaberi]["nombre"])
     saber = saberes[saberes["codSaber"]==codSaberi]["nombre"].item()
     st.markdown(f"* **{saber}**")
     compar = cursos_rasgos[(cursos_rasgos["codSaber"]==codSaberi)\
